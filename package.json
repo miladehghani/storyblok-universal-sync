@@ -1,10 +1,14 @@
 {
-  "name": "china-sync",
+  "name": "storyblok-universal-sync",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "sus": "index.js",
+    "storyblok-universal-sync": "index.js"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +17,7 @@
     "form-data": "^3.0.0",
     "p-series": "^2.1.0",
     "request": "^2.88.2",
-    "storyblok-js-client": "^2.0.12"
+    "storyblok-js-client": "^2.0.12",
+    "yargs": "^17.7.2"
   }
 }
