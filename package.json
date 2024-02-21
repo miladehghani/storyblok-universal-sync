@@ -1,14 +1,16 @@
 {
   "name": "storyblok-universal-sync",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "",
-  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/miladehghani/storyblok-universal-sync"
+  },
   "bin": {
-    "sus": "index.js",
-    "storyblok-universal-sync": "index.js"
+    "storyblok-universal-sync": "bin/sync.js"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node bin/sync.js"
   },
   "author": "",
   "license": "ISC",
