@@ -1,4 +1,5 @@
 const chalk = require("chalk");
+const validator = require("validator");
 const StoryblokClient = require("storyblok-js-client");
 const pSeries = require("p-series");
 const fileUploader = require("./fileUploader");
@@ -15,6 +16,7 @@ const SyncSpaces = {
     this.targetSpaceId = options.targetSpaceId;
     this.sourceClient = options.sourceClient;
     this.targetClient = options.targetClient;
+    this.updateUuids = options.updateUuids;
   },
 
   async syncAssets() {
@@ -106,7 +108,26 @@ const SyncSpaces = {
     }
   },
 
+  replaceUuids(obj, uuidMapping) {
+    for (var key in obj) {
+        var value = obj[key];
+        if (typeof value === "object") {
+          this.replaceUuids(value, uuidMapping);   
+        } else if (typeof value === "string" && !key.endsWith("uid")) {
+          if (validator.isUUID(value)) {
+            var mappedValue = uuidMapping.get(value);
+            if (mappedValue) {
+              obj[key] = mappedValue;
+              console.log(chalk.green("✓") + " Replaced uuid reference " + value + " with " + mappedValue);
+            }
+          }
+        }
+    }
+  },
+
   async syncStories() {
+    const uuidMapping = new Map();
+
     console.log(chalk.green("✓") + " Syncing stories...");
     var targetFolders = await this.targetClient.getAll(
       `spaces/${this.targetSpaceId}/stories`,
@@ -132,11 +153,15 @@ const SyncSpaces = {
 
     for (let i = 0; i < all.length; i++) {
       console.log(chalk.green("✓") + " Starting update " + all[i].full_slug);
-
+  
       var storyResult = await this.sourceClient.get(
         "spaces/" + this.sourceSpaceId + "/stories/" + all[i].id
       );
       var sourceStory = storyResult.data.story;
+      if (this.updateUuids) {
+        this.replaceUuids(sourceStory, uuidMapping);
+      }
+
       var slugs = sourceStory.full_slug.split("/");
       var folderId = 0;
 
@@ -168,7 +193,6 @@ const SyncSpaces = {
         if (sourceStory.published) {
           payload.publish = "1";
         }
-
         if (existingStory.data.stories.length === 1) {
           await this.targetClient.put(
             "spaces/" +
@@ -177,17 +201,21 @@ const SyncSpaces = {
               existingStory.data.stories[0].id,
             payload
           );
+
+          uuidMapping.set(sourceStory.uuid, existingStory.data.stories[0].uuid)
+
           console.log(
             chalk.green("✓") +
               " Updated " +
               existingStory.data.stories[0].full_slug
           );
         } else {
-          await this.targetClient.post(
+          let newStory = await this.targetClient.post(
             "spaces/" + this.targetSpaceId + "/stories",
             payload
           );
-          console.log(chalk.green("✓") + " Created " + sourceStory.full_slug);
+          uuidMapping.set(sourceStory.uuid, newStory.data.story.uuid)
+          console.log(chalk.green("✓") + " Created " + sourceStory.full_slug + ", uuid: " + newStory.data.story.uuid);
         }
       } catch (e) {
         console.log(e);
