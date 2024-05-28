@@ -11,6 +11,7 @@ The Storyblok Universal Sync CLI is a command-line interface tool designed to sy
 - `--sourceSpaceId`: The Space ID of the source Storyblok space. This is required.
 - `--targetSpaceId`: The Space ID of the target Storyblok space. This is required.
 - `--types`: Specify the types of content to sync. Supported types include 'assets', 'components', 'folders', 'stories'. You can specify multiple types by separating them with spaces. This is required.
+- `--experimental-updateUuids`: Each created story will get a new uuid from Storyblok. References between content types will fail. This feature creates a mapping and updates the reference. Could need an extra sync if referencing story is created/updated before the referenced story.
 
 ## How to Use
 
